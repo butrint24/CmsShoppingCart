@@ -43,6 +43,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 
         //Post Request /admin/pages/create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Page page)
         {
             if (ModelState.IsValid)
@@ -53,7 +54,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
                 var slug = await context.Pages.FirstOrDefaultAsync(x => x.Slug == page.Slug);
                 if(slug != null)
                 {
-                    ModelState.AddModelError("", "The title already exist");
+                    ModelState.AddModelError("", "The page already exist");
                     return View(page);
                 }
 
@@ -63,6 +64,47 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
                 TempData["Success"] = "The page has been added!";
 
                 return RedirectToAction("Index");
+
+
+            }
+
+            return View(page);
+
+        }
+
+        //Put Request /admin/pages/edit/id
+        public async Task<IActionResult> Edit(int id)
+        {
+            Page page = await context.Pages.FindAsync(id);
+            if (page == null)
+            {
+                return NotFound();
+            }
+            return View(page);
+        }
+
+        //Post Request /admin/pages/edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Page page)
+        {
+            if (ModelState.IsValid)
+            {
+                page.Slug = page.Id == 1 ? "home" : page.Title.ToLower().Replace(" ", "-");
+
+                var slug = await context.Pages.Where(x => x.Id != page.Id).FirstOrDefaultAsync(x => x.Slug == page.Slug);
+                if (slug != null)
+                {
+                    ModelState.AddModelError("", "The page already exist");
+                    return View(page);
+                }
+
+                context.Update(page);
+                await context.SaveChangesAsync();
+
+                TempData["Success"] = "The page has been edited!";
+
+                return RedirectToAction("Edit", new { id = page.Id});
 
 
             }
