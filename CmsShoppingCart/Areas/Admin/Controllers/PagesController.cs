@@ -83,7 +83,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             return View(page);
         }
 
-        //Post Request /admin/pages/edit
+        //Post Request /admin/pages/edit/id
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Page page)

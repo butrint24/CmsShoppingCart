@@ -58,5 +58,46 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             return View(category);
 
         }
+
+        //Get Request /admin/categories/edit/id
+        public async Task<IActionResult> Edit(int id)
+        {
+            Category category = await context.Categories.FindAsync(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+            return View(category);
+        }
+
+        //Post Request /admin/categories/edit/id
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Category category)
+        {
+            if (ModelState.IsValid)
+            {
+                category.Slug = category.Name.ToLower().Replace(" ", "-");
+
+                var slug = await context.Categories.Where(x => x.Id != id).FirstOrDefaultAsync(x => x.Slug == category.Slug);
+                if (slug != null)
+                {
+                    ModelState.AddModelError("", "The category already exist");
+                    return View(category);
+                }
+
+                context.Update(category);
+                await context.SaveChangesAsync();
+
+                TempData["Success"] = "The category has been edited!";
+
+                return RedirectToAction("Edit", new { id });
+
+
+            }
+
+            return View(category);
+
+        }
     }
 }
