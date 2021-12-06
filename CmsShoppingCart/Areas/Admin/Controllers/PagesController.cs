@@ -72,7 +72,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 
         }
 
-        //Put Request /admin/pages/edit/id
+        //Get Request /admin/pages/edit/id
         public async Task<IActionResult> Edit(int id)
         {
             Page page = await context.Pages.FindAsync(id);
@@ -111,6 +111,25 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 
             return View(page);
 
+        }
+
+        //Get Request /admin/pages/delete/id
+        public async Task<IActionResult> Delete(int id)
+        {
+            Page page = await context.Pages.FindAsync(id);
+
+            if (page == null)
+            {
+                TempData["Error"] = "The page does not exist!";
+            }
+            else
+            {
+                context.Pages.Remove(page);
+                await context.SaveChangesAsync();
+
+                TempData["Success"] = "The page has been deleted!";
+            }
+            return RedirectToAction("Index");
         }
 
     }
