@@ -10,7 +10,7 @@ namespace CmsShoppingCart.Models
     {
         public int Id{ get; set; }
         [Required, MinLength(2, ErrorMessage ="Minimum length is 2")]
-        [RegularExpression(@"^[a-zA-Z-]+$", ErrorMessage ="Only letteres are allowed")]
+        [RegularExpression(@"^[a-zA-Z-\s]+$", ErrorMessage ="Only letteres are allowed")]
         public string Name { get; set; }
         public string Slug { get; set; }
         public int Sorting { get; set; }

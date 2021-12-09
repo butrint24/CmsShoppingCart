@@ -37,6 +37,7 @@
             <div class="form-group">
                 <label asp-for="Image" class="control-label">Product Image</label>
                 <input asp-for="ImageUpload" class="form-control" />
+                <img src="" alt="" id="imgpreview"/>
                 <span asp-validation-for="ImageUpload" class="text-danger"></span>
             </div>
 
@@ -56,5 +57,9 @@
 
     <script>
         CKEDITOR.replace("Description");
+
+        $("#ImageUpload").change(function () {
+            readURL(this);
+        });
     </script>
 }
