@@ -1,11 +1,14 @@
 ﻿using CmsShoppingCart.Infrastructure;
+using CmsShoppingCart.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace CmsShoppingCart.Areas.Admin.Controllers
 {
@@ -13,10 +16,12 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
     public class ProductsController : Controller
     {
         private readonly CmsShoppingCartContext context;
+        private readonly IWebHostEnvironment webHostEnviroment;
 
-        public ProductsController(CmsShoppingCartContext context)
+        public ProductsController(CmsShoppingCartContext context, IWebHostEnvironment webHostEnviroment)
         {
             this.context = context;
+            this.webHostEnviroment = webHostEnviroment;
         }
 
         //GET Request /admin/products
@@ -25,12 +30,57 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             return View(await context.Products.OrderByDescending(x => x.Id).Include(x => x.Category).ToListAsync());
         }
 
-        //GET Request /admin/pages/products
+        //GET Request /admin/products/create
         public IActionResult Create()
         {
             ViewBag.CategoryId = new SelectList(context.Categories.OrderBy(x => x.Sorting), "Id", "Name");
 
             return View();
+        }
+
+        //Post Request /admin/products/create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Product product)
+        {
+            ViewBag.CategoryId = new SelectList(context.Categories.OrderBy(x => x.Sorting), "Id", "Name");
+
+            if (ModelState.IsValid)
+            {
+                product.Slug = product.Name.ToLower().Replace(" ", "-");
+
+                var slug = await context.Pages.FirstOrDefaultAsync(x => x.Slug == product.Slug);
+                if (slug != null)
+                {
+                    ModelState.AddModelError("", "The product already exist");
+                    return View(product);
+                }
+
+                string imageName = "noimage.png";
+                if(product.ImageUpload != null)
+                {
+                    string uploadsDir = Path.Combine(webHostEnviroment.WebRootPath, "media/products");
+                    imageName = Guid.NewGuid().ToString() + "_" + product.ImageUpload.FileName;
+                    string filePath = Path.Combine(uploadsDir, imageName);
+                    FileStream fs = new FileStream(filePath, FileMode.Create);
+                    await product.ImageUpload.CopyToAsync(fs);
+                    fs.Close();
+                }
+
+                product.Image = imageName;
+
+                context.Add(product);
+                await context.SaveChangesAsync();
+
+                TempData["Success"] = "The product has been added!";
+
+                return RedirectToAction("Index");
+
+
+            }
+
+            return View(product);
+
         }
 
     }
