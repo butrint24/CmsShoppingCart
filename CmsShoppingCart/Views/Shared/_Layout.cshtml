@@ -18,7 +18,7 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
-                        @await Component.InvokeAsync("MainMenu"); 
+                        @await Component.InvokeAsync("MainMenu")
                     </ul>
                 </div>
             </div>
@@ -29,6 +29,10 @@
             <div class="row">
                 <div class="col-3">
                     @await Component.InvokeAsync("Categories")
+
+                    <div class="smallcart bg-success mt-3 p-3 text-white">
+                        @await Component.InvokeAsync("SmallCart")
+                    </div>
                 </div>
                 <div class="col">
                     @RenderBody()
